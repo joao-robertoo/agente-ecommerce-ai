@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sofia — Assistente NovaTech</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="chat-container">
+    <div class="chat-header">
+      <div class="avatar">S</div>
+      <div>
+        <h2>Sofia</h2>
+        <span class="status">● Online</span>
+      </div>
+    </div>
+
+    <div class="chat-messages" id="chatMessages">
+      <div class="message bot">
+        <p>Olá! Sou a Sofia, assistente virtual da NovaTech. Como posso te ajudar hoje? 😊</p>
+      </div>
+    </div>
+
+    <div class="chat-input">
+      <input 
+        type="text" 
+        id="userInput" 
+        placeholder="Digite sua mensagem..." 
+        autocomplete="off"
+      />
+      <button id="sendBtn">Enviar</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
