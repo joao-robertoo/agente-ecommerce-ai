@@ -1,38 +1,136 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jhon — Assistente NovaTech</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JHON — AI Interface</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet"
+  />
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
-  <div class="chat-container">
-    <div class="chat-header">
-      <div class="avatar">J</div>
-      <div>
-        <h2>Jhon</h2>
-        <span class="status">● Online</span>
-      </div>
-    </div>
-
-    <div class="chat-messages" id="chatMessages">
-      <div class="message bot">
-        <p>Olá! Sou o Jhon, assistente virtual da NovaTech. Como posso te ajudar hoje? 😊</p>
-      </div>
-    </div>
-
-    <div class="chat-input">
-      <input 
-        type="text" 
-        id="userInput" 
-        placeholder="Digite sua mensagem..." 
-        autocomplete="off"
-      />
-      <button id="sendBtn">Enviar</button>
-    </div>
+  <!-- Ambient background layers -->
+  <div class="ambient-layer" aria-hidden="true">
+    <div class="aurora aurora-1"></div>
+    <div class="aurora aurora-2"></div>
+    <div class="aurora aurora-3"></div>
   </div>
+  <div class="grain-overlay" aria-hidden="true"></div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-orb">
+        <span>J</span>
+        <div class="orb-ring"></div>
+      </div>
+      <div class="logo-text">
+        <span class="logo-name">JHON</span>
+        <span class="logo-tag">by NovaTech</span>
+      </div>
+    </div>
+
+    <button class="new-chat-btn" id="newChatBtn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M12 5v14M5 12h14" />
+      </svg>
+      Nova conversa
+    </button>
+
+    <div class="sidebar-section-label">Recentes</div>
+    <div class="conv-list" id="convList">
+      <div class="conv-item is-active" id="currentConvItem">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        </svg>
+        <span>Conversa atual</span>
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="model-pill">
+        <div class="model-pulse"></div>
+        <span>llama-3.3-70b-versatile</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main interface -->
+  <main class="main" id="main">
+    <!-- Top bar -->
+    <header class="topbar">
+      <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+      </button>
+      <div class="topbar-center">
+        <span class="topbar-title">JHON</span>
+      </div>
+      <div class="topbar-status">
+        <div class="status-dot-live"></div>
+        <span>Online</span>
+      </div>
+    </header>
+
+    <!-- Messages area -->
+    <div class="messages-area" id="messagesArea">
+      <!-- Welcome state -->
+      <div class="welcome" id="welcome">
+        <div class="welcome-orb">
+          <div class="welcome-orb-ring r1"></div>
+          <div class="welcome-orb-ring r2"></div>
+          <div class="welcome-orb-core">J</div>
+        </div>
+        <h2 class="welcome-heading">Como posso ajudar?</h2>
+        <p class="welcome-sub">Seu assistente de IA avançado. Pergunte qualquer coisa.</p>
+        <div class="suggestions">
+          <button class="suggestion" data-msg="O que você consegue fazer?">
+            <span class="suggestion-icon">⚡</span>
+            <span>O que você consegue fazer?</span>
+          </button>
+          <button class="suggestion" data-msg="Escreva um email profissional pedindo feedback sobre meu trabalho">
+            <span class="suggestion-icon">✉️</span>
+            <span>Escrever email profissional</span>
+          </button>
+          <button class="suggestion" data-msg="Explique inteligência artificial generativa de forma simples">
+            <span class="suggestion-icon">🧠</span>
+            <span>O que é IA Generativa?</span>
+          </button>
+          <button class="suggestion" data-msg="Me dê 5 ideias de projetos de IA para colocar no portfólio">
+            <span class="suggestion-icon">🚀</span>
+            <span>Ideias de projetos de IA</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input bar -->
+    <div class="input-bar">
+      <div class="input-wrapper" id="inputWrapper">
+        <textarea
+          id="userInput"
+          placeholder="Mensagem para Jhon..."
+          rows="1"
+          autocomplete="off"
+          spellcheck="false"
+        ></textarea>
+        <button class="send-btn" id="sendBtn" disabled aria-label="Enviar mensagem">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M22 2L11 13" />
+            <path d="M22 2L15 22 11 13 2 9l20-7z" />
+          </svg>
+        </button>
+      </div>
+      <p class="input-disclaimer">JHON pode cometer erros. Verifique informações importantes.</p>
+    </div>
+  </main>
 
   <script src="app.js"></script>
 </body>
