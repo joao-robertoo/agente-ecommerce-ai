@@ -28,7 +28,7 @@ async function sendMessage() {
     content: text
   });
 
-  const typingDiv = addMessage('Sofia está digitando...', 'typing');
+  const typingDiv = addMessage('Jhon está digitando...', 'typing');
 
   try {
     const response = await fetch('/api/chat', {
