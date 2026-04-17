@@ -1,32 +1,30 @@
-export default async function handler(req, res) {
-  // CORS headers
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
+export const config = { runtime: 'edge' };
 
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
+
+export default async function handler(req) {
+  // Handle preflight
   if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
+    return new Response(null, { status: 204, headers: CORS });
   }
 
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return new Response('Method not allowed', { status: 405, headers: CORS });
   }
 
   try {
-    const { messages } = req.body;
+    const { messages } = await req.json();
 
     if (!messages || !Array.isArray(messages)) {
-      console.error('Invalid messages:', messages);
-      return res.status(400).json({ error: 'Invalid messages format' });
+      return new Response(JSON.stringify({ error: 'Invalid messages format' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json', ...CORS },
+      });
     }
-
-    console.log('Enviando para Groq:', JSON.stringify({
-      model: 'llama-3.3-70b-versatile',
-      stream: true,
-      messages_count: messages.length,
-    }));
 
     const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -54,29 +52,37 @@ Responda sempre em português brasileiro, a menos que o usuário escreva em outr
       }),
     });
 
-    console.log('Resposta Groq status:', groqResponse.status);
-
     if (!groqResponse.ok) {
-      const errorText = await groqResponse.text();
-      console.error('Groq API error:', groqResponse.status, errorText);
-      return res.status(500).json({ 
-        error: `Groq API Error: ${groqResponse.status} - ${errorText}`,
-        details: errorText 
-      });
+      const errText = await groqResponse.text();
+      console.error('Groq error:', groqResponse.status, errText);
+      return new Response(
+        JSON.stringify({ error: `Groq API error: ${groqResponse.status}` }),
+        {
+          status: 502,
+          headers: { 'Content-Type': 'application/json', ...CORS },
+        }
+      );
     }
 
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache, no-transform');
-    res.setHeader('Connection', 'keep-alive');
-
-    // Pipe the response directly
-    groqResponse.body.pipe(res);
+    // Stream the response back with CORS headers
+    return new Response(groqResponse.body, {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache, no-transform',
+        'X-Accel-Buffering': 'no',
+        ...CORS,
+      },
+    });
 
   } catch (err) {
     console.error('Handler error:', err);
-    res.status(500).json({ 
-      error: `Internal Server Error: ${err.message}`,
-      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
-    });
+    return new Response(
+      JSON.stringify({ error: 'Internal server error', detail: err.message }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...CORS },
+      }
+    );
   }
 }
