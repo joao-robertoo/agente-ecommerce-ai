@@ -38,7 +38,7 @@
   --r-lg: 20px;
 }
 
-html, body { height: 100%; overflow: hidden; }
+html, body { height: 100%; height: 100dvh; overflow: hidden; }
 
 body {
   font-family: var(--font-body);
@@ -544,11 +544,16 @@ body.loaded #particleCanvas { opacity: 1; }
   border: none;
   color: var(--text-2);
   cursor: pointer;
-  padding: 6px;
+  padding: 8px;
   border-radius: var(--r-sm);
   transition: all 0.15s;
   display: flex;
   align-items: center;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  min-width: 40px;
+  min-height: 40px;
+  justify-content: center;
 }
 .sidebar-toggle:hover { background: var(--bg-hover); color: var(--text-1); }
 
@@ -908,10 +913,56 @@ body.loaded #particleCanvas { opacity: 1; }
 .copy-btn.copied { color:#4ade80; border-color:rgba(74,222,128,0.3); }
 
 /* =====================================================
+   JHON PHOTO AVATAR
+   ===================================================== */
+.jhon-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  display: block;
+}
+.jhon-letter { display: none; }
+.jhon-photo[style*="display: none"] ~ .jhon-letter,
+.jhon-photo[style*="display:none"] ~ .jhon-letter { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
+
+/* Splash orb photo override */
+.splash-orb-core .jhon-photo {
+  border-radius: 22px;
+}
+.splash-orb-core .jhon-letter {
+  font-family: var(--font-ui);
+  font-size: 32px;
+  font-weight: 800;
+}
+
+/* Sidebar logo photo */
+.logo-orb .jhon-photo { border-radius: 10px; }
+.logo-orb .jhon-letter {
+  position: absolute;
+  inset: 0;
+  font-family: var(--font-ui);
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent), var(--cyan));
+  border-radius: 10px;
+  z-index: 2;
+}
+
+/* Welcome orb photo */
+.welcome-orb-core .jhon-photo { border-radius: 22px; }
+.welcome-orb-core .jhon-letter {
+  font-family: var(--font-ui);
+  font-size: 28px;
+  font-weight: 800;
+}
+
+/* =====================================================
    INPUT BAR
    ===================================================== */
 .input-bar {
-  padding: 16px 24px 20px;
+  padding: 16px 24px max(20px, env(safe-area-inset-bottom, 20px));
   flex-shrink: 0;
 }
 .input-wrapper {

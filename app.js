@@ -65,7 +65,7 @@ document.addEventListener('click', (e) => {
     window.innerWidth <= 768 &&
     sidebar.classList.contains('is-open') &&
     !sidebar.contains(e.target) &&
-    e.target !== sidebarToggle
+    !sidebarToggle.contains(e.target)
   ) {
     sidebar.classList.remove('is-open');
   }
@@ -185,7 +185,7 @@ function addBotMessage() {
 
   row.innerHTML = `
     <div class="bot-wrapper">
-      <div class="bot-avatar thinking" id="thinkingAvatar">J</div>
+      <div class="bot-avatar thinking" id="thinkingAvatar"><img src="jhon.jpg" class="jhon-photo" alt="J" onerror="this.style.display='none'"><span class="jhon-letter">J</span></div>
       <div class="bubble-bot" id="streamTarget"></div>
       <button class="copy-btn" title="Copiar">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
