@@ -15,21 +15,31 @@ let conversationHistory = [];
 let isStreaming = false;
 
 // --- DOM refs ---
-const messagesArea    = document.getElementById('messagesArea');
-const welcome         = document.getElementById('welcome');
-const userInput       = document.getElementById('userInput');
-const sendBtn         = document.getElementById('sendBtn');
-const newChatBtn      = document.getElementById('newChatBtn');
-const sidebarToggle   = document.getElementById('sidebarToggle');
-const sidebar         = document.getElementById('sidebar');
-const convList        = document.getElementById('convList');
-const currentConvItem = document.getElementById('currentConvItem');
+const messagesArea         = document.getElementById('messagesArea');
+const welcome              = document.getElementById('welcome');
+const userInput            = document.getElementById('userInput');
+const sendBtn              = document.getElementById('sendBtn');
+const newChatBtn           = document.getElementById('newChatBtn');
+const sidebarToggle        = document.getElementById('sidebarToggle');
+const desktopSidebarToggle = document.getElementById('desktopSidebarToggle');
+const sidebar              = document.getElementById('sidebar');
+const convList             = document.getElementById('convList');
+const currentConvItem      = document.getElementById('currentConvItem');
 
 // --- Auto-resize textarea ---
 userInput.addEventListener('input', () => {
   userInput.style.height = 'auto';
   userInput.style.height = Math.min(userInput.scrollHeight, 200) + 'px';
   sendBtn.disabled = userInput.value.trim() === '' || isStreaming;
+});
+
+// --- Focus on input (scroll into view on mobile) ---
+userInput.addEventListener('focus', () => {
+  if (window.innerWidth <= 768) {
+    setTimeout(() => {
+      userInput.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }, 100);
+  }
 });
 
 // --- Send on Enter (Shift+Enter = newline) ---
@@ -43,8 +53,14 @@ userInput.addEventListener('keydown', (e) => {
 sendBtn.addEventListener('click', sendMessage);
 
 // --- Sidebar toggle (mobile) ---
-sidebarToggle.addEventListener('click', () => {
+sidebarToggle.addEventListener('click', (e) => {
+  e.stopPropagation();
   sidebar.classList.toggle('is-open');
+});
+
+// --- Sidebar toggle (desktop) ---
+desktopSidebarToggle.addEventListener('click', () => {
+  sidebar.classList.toggle('collapsed');
 });
 
 // Close sidebar on backdrop click (mobile)
@@ -53,9 +69,25 @@ document.addEventListener('click', (e) => {
     window.innerWidth <= 768 &&
     sidebar.classList.contains('is-open') &&
     !sidebar.contains(e.target) &&
-    e.target !== sidebarToggle
+    e.target !== sidebarToggle &&
+    !sidebarToggle.contains(e.target)
   ) {
     sidebar.classList.remove('is-open');
+  }
+});
+
+// Close sidebar when clicking on a conversation item or button in sidebar (mobile)
+convList.addEventListener('click', () => {
+  if (window.innerWidth <= 768 && sidebar.classList.contains('is-open')) {
+    sidebar.classList.remove('is-open');
+  }
+});
+
+newChatBtn.addEventListener('click', function(e) {
+  if (window.innerWidth <= 768 && sidebar.classList.contains('is-open')) {
+    setTimeout(() => {
+      sidebar.classList.remove('is-open');
+    }, 100);
   }
 });
 
@@ -70,11 +102,40 @@ newChatBtn.addEventListener('click', () => {
 
     const item = document.createElement('div');
     item.className = 'conv-item';
+    item.setAttribute('data-test', 'conv-history-item');
+    
     item.innerHTML = `
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
       </svg>
-      <span>${preview}</span>`;
+      <span class="conv-item-text">${preview}</span>
+      <button class="conv-item-delete" type="button" title="Deletar conversa">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>`;
+    
+    // Debug log
+    console.log('Criando item de conversa:', {
+      preview,
+      deleteButton: item.querySelector('.conv-item-delete'),
+      allClasses: item.className,
+    });
+    
+    // Add delete event listener
+    const deleteBtn = item.querySelector('.conv-item-delete');
+    if (deleteBtn) {
+      deleteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        console.log('Delete clicado');
+        item.style.animation = 'fade-out 0.2s ease-out';
+        setTimeout(() => item.remove(), 200);
+      });
+    } else {
+      console.warn('Delete button not found!');
+    }
+
     convList.insertBefore(item, currentConvItem.nextSibling);
   }
 
@@ -94,7 +155,11 @@ newChatBtn.addEventListener('click', () => {
   userInput.value = '';
   userInput.style.height = 'auto';
   sendBtn.disabled = true;
-  sidebar.classList.remove('is-open');
+  
+  // Close mobile sidebar after new chat
+  if (window.innerWidth <= 768) {
+    sidebar.classList.remove('is-open');
+  }
 });
 
 // --- Suggestion cards ---
@@ -204,7 +269,20 @@ async function sendMessage() {
       body: JSON.stringify({ messages: conversationHistory }),
     });
 
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    console.log('Response status:', response.status, response.statusText);
+    console.log('Response headers:', {
+      contentType: response.headers.get('content-type'),
+      cacheControl: response.headers.get('cache-control'),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      throw new Error(`HTTP ${response.status}: ${JSON.stringify(errorData)}`);
+    }
+
+    if (!response.body) {
+      throw new Error('Response body is empty');
+    }
 
     const reader  = response.body.getReader();
     const decoder = new TextDecoder();
@@ -247,7 +325,11 @@ async function sendMessage() {
 
   } catch (err) {
     console.error('Streaming error:', err);
-    botEl.innerHTML = `<p style="color:#ff6b6b">Erro ao conectar. Tente novamente.</p>`;
+    console.error('Error details:', {
+      message: err.message,
+      stack: err.stack,
+    });
+    botEl.innerHTML = `<p style="color:#ff6b6b">❌ Erro ao conectar: ${err.message || 'Erro desconhecido'}</p>`;
   }
 
   isStreaming = false;
