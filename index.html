@@ -4,29 +4,61 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>JHON — AI Interface</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- Marked.js for markdown -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <!-- PDF.js for reading PDFs client-side -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    if (window.pdfjsLib) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc =
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+  </script>
+
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-  <!-- ========== PARTICLE CANVAS ========== -->
+  <!-- ═══ PARTICLE CANVAS ═══ -->
   <canvas id="particleCanvas"></canvas>
 
-  <!-- ========== SPLASH SCREEN ========== -->
+  <!-- ═══ DROP OVERLAY ═══ -->
+  <div class="drop-overlay" id="dropOverlay">
+    <div class="drop-inner">
+      <div class="drop-icon">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+      </div>
+      <p>Solte aqui para enviar</p>
+      <span>Imagens ou PDFs</span>
+    </div>
+  </div>
+
+  <!-- ═══ SPLASH SCREEN ═══ -->
   <div class="splash" id="splash">
     <div class="splash-bg">
       <div class="splash-aurora s-a1"></div>
       <div class="splash-aurora s-a2"></div>
       <div class="splash-aurora s-a3"></div>
+      <div class="splash-aurora s-a4"></div>
     </div>
     <div class="splash-content">
       <div class="splash-orb" id="splashOrb">
         <div class="splash-orb-ring sr1"></div>
         <div class="splash-orb-ring sr2"></div>
         <div class="splash-orb-ring sr3"></div>
-        <div class="splash-orb-core"><img src="jhon.jpg" class="jhon-photo" alt="J" onerror="this.style.display='none'"><span class="jhon-letter">J</span></div>
+        <div class="splash-orb-core">
+          <img src="jhon.jpg" class="jhon-photo" alt="J" onerror="this.style.display='none'">
+          <span class="jhon-letter">J</span>
+        </div>
         <div class="splash-orb-glow"></div>
       </div>
       <div class="splash-name" id="splashName">JHON</div>
@@ -37,7 +69,7 @@
     </div>
   </div>
 
-  <!-- ========== APP ========== -->
+  <!-- ═══ APP ═══ -->
   <div class="app" id="app">
 
     <!-- Ambient background -->
@@ -49,11 +81,14 @@
     <div class="grain-overlay" aria-hidden="true"></div>
     <div class="scan-lines" aria-hidden="true"></div>
 
-    <!-- Sidebar -->
+    <!-- ── Sidebar ── -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-logo">
         <div class="logo-orb">
-          <span><img src="jhon.jpg" class="jhon-photo" alt="J" onerror="this.style.display='none'"><span class="jhon-letter">J</span></span>
+          <span>
+            <img src="jhon.jpg" class="jhon-photo" alt="J" onerror="this.style.display='none'">
+            <span class="jhon-letter">J</span>
+          </span>
           <div class="orb-ring"></div>
         </div>
         <div class="logo-text">
@@ -63,22 +98,43 @@
       </div>
 
       <button class="new-chat-btn" id="newChatBtn">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
         Nova conversa
       </button>
 
       <div class="sidebar-section-label">Recentes</div>
       <div class="conv-list" id="convList">
         <div class="conv-item is-active" id="currentConvItem">
-          <svg class="conv-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          <span class="conv-label">Conversa atual</span>
+          <svg class="conv-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          <div class="conv-info">
+            <span class="conv-label">Conversa atual</span>
+          </div>
           <button class="conv-delete" title="Deletar" onclick="deleteConversation(this)">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+              <path d="M10 11v6M14 11v6"/>
+              <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+            </svg>
           </button>
         </div>
       </div>
 
       <div class="sidebar-footer">
+        <div class="capabilities">
+          <div class="cap-pill">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="m9 9 6 6m0-6-6 6"/></svg>
+            Visão
+          </div>
+          <div class="cap-pill">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            PDF
+          </div>
+        </div>
         <div class="model-pill">
           <div class="model-pulse"></div>
           <span>llama-3.3-70b</span>
@@ -86,15 +142,19 @@
       </div>
     </aside>
 
-    <!-- Main -->
+    <!-- ── Main ── -->
     <main class="main" id="main">
       <header class="topbar">
         <button class="sidebar-toggle" id="sidebarToggle" aria-label="Abrir menu">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
         </button>
         <div class="topbar-center">
           <span class="topbar-title">JHON</span>
-          <span class="topbar-version">v3.0</span>
+          <span class="topbar-version">v4.0</span>
         </div>
         <div class="topbar-status">
           <div class="status-dot-live"></div>
@@ -102,16 +162,19 @@
         </div>
       </header>
 
+      <!-- Messages -->
       <div class="messages-area" id="messagesArea">
-        <!-- Welcome -->
         <div class="welcome" id="welcome">
           <div class="welcome-orb">
             <div class="welcome-orb-ring r1"></div>
             <div class="welcome-orb-ring r2"></div>
-            <div class="welcome-orb-core"><img src="jhon.jpg" class="jhon-photo" alt="J" onerror="this.style.display='none'"><span class="jhon-letter">J</span></div>
+            <div class="welcome-orb-core">
+              <img src="jhon.jpg" class="jhon-photo" alt="J" onerror="this.style.display='none'">
+              <span class="jhon-letter">J</span>
+            </div>
           </div>
           <h2 class="welcome-heading">Como posso ajudar?</h2>
-          <p class="welcome-sub">Seu assistente de IA avançado. Pergunte qualquer coisa.</p>
+          <p class="welcome-sub">Texto, imagens e PDFs. Pergunte qualquer coisa.</p>
           <div class="suggestions">
             <button class="suggestion" data-msg="O que você consegue fazer?">
               <span class="suggestion-icon">⚡</span><span>O que você consegue fazer?</span>
@@ -129,27 +192,48 @@
         </div>
       </div>
 
+      <!-- Input bar -->
       <div class="input-bar">
+        <!-- File preview chips -->
+        <div class="file-preview-area" id="filePreviewArea"></div>
+
         <div class="input-wrapper" id="inputWrapper">
-          <textarea id="userInput" placeholder="Mensagem para Jhon..." rows="1" autocomplete="off" spellcheck="false"></textarea>
+          <!-- Attach button -->
+          <button class="attach-btn" id="attachBtn" title="Anexar imagem ou PDF">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66L9.41 17.41a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+            </svg>
+          </button>
+
+          <textarea id="userInput" placeholder="Mensagem para Jhon…" rows="1" autocomplete="off" spellcheck="false"></textarea>
+
           <button class="send-btn" id="sendBtn" disabled aria-label="Enviar">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M22 2L11 13"/>
+              <path d="M22 2L15 22 11 13 2 9l20-7z"/>
+            </svg>
           </button>
         </div>
-        <p class="input-disclaimer">JHON pode cometer erros. Verifique informações importantes.</p>
+
+        <!-- Hidden file input -->
+        <input type="file" id="fileInput" accept="image/*,.pdf" multiple style="display:none">
+
+        <p class="input-disclaimer">
+          JHON pode cometer erros · Suporta imagens e PDFs
+        </p>
       </div>
     </main>
 
   </div><!-- /app -->
 
-  <!-- Particle system -->
+  <!-- ═══ PARTICLE SYSTEM ═══ -->
   <script>
     const canvas = document.getElementById('particleCanvas');
-    const ctx = canvas.getContext('2d');
+    const ctx    = canvas.getContext('2d');
     let particles = [];
 
     function resize() {
-      canvas.width = window.innerWidth;
+      canvas.width  = window.innerWidth;
       canvas.height = window.innerHeight;
     }
     resize();
@@ -158,20 +242,18 @@
     class Particle {
       constructor() { this.reset(); }
       reset() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
-        this.size = Math.random() * 1.4 + 0.2;
-        this.speedX = (Math.random() - 0.5) * 0.3;
-        this.speedY = (Math.random() - 0.5) * 0.3;
-        this.opacity = Math.random() * 0.5 + 0.1;
-        this.hue = Math.random() > 0.5 ? 255 : 195; // purple or cyan
+        this.x       = Math.random() * canvas.width;
+        this.y       = Math.random() * canvas.height;
+        this.size    = Math.random() * 1.6 + 0.3;
+        this.speedX  = (Math.random() - 0.5) * 0.28;
+        this.speedY  = (Math.random() - 0.5) * 0.28;
+        this.opacity = Math.random() * 0.55 + 0.08;
+        this.hue     = Math.random() > 0.5 ? 255 : 195;
       }
       update() {
         this.x += this.speedX;
         this.y += this.speedY;
-        if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
-          this.reset();
-        }
+        if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.reset();
       }
       draw() {
         ctx.beginPath();
@@ -183,24 +265,23 @@
       }
     }
 
-    for (let i = 0; i < 120; i++) particles.push(new Particle());
+    for (let i = 0; i < 130; i++) particles.push(new Particle());
 
     function animate() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       particles.forEach(p => { p.update(); p.draw(); });
 
-      // Draw faint connection lines
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
+          const dx   = particles[i].x - particles[j].x;
+          const dy   = particles[i].y - particles[j].y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 100) {
+          if (dist < 90) {
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = `rgba(124, 106, 255, ${0.06 * (1 - dist / 100)})`;
-            ctx.lineWidth = 0.5;
+            ctx.strokeStyle = `rgba(124, 106, 255, ${0.07 * (1 - dist / 90)})`;
+            ctx.lineWidth   = 0.5;
             ctx.stroke();
           }
         }
