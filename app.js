@@ -502,9 +502,10 @@ function buildContent(text) {
   if (combined) parts.push({ type: 'text', text: combined });
   else if (parts.length === 0) parts.push({ type: 'text', text: 'Analise este arquivo.' });
 
-  // Images
+  // Images — garante que a URL seja sempre uma data URI completa
   pendingFiles.filter(f => f.type === 'image').forEach(f => {
-    parts.push({ type: 'image_url', image_url: { url: f.base64 } });
+    const url = f.base64.startsWith('data:') ? f.base64 : `data:image/jpeg;base64,${f.base64}`;
+    parts.push({ type: 'image_url', image_url: { url } });
   });
 
   return parts;
@@ -678,8 +679,9 @@ async function sendMessage() {
     renderSidebar();
 
   } catch (err) {
-    console.error('Error:', err);
-    bubbleEl.innerHTML = `<p style="color:#ff6b6b">Erro ao conectar. Tente novamente.</p>`;
+    console.error('[JHON] Erro:', err);
+    const detail = err.message || 'Erro desconhecido';
+    bubbleEl.innerHTML = `<p style="color:#ff6b6b">Erro ao conectar. Tente novamente.<br><small style="opacity:0.6">${escapeHtml(detail)}</small></p>`;
     avatarEl.classList.remove('thinking');
   }
 

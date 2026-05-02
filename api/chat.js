@@ -1,7 +1,7 @@
 export const config = { runtime: 'edge' };
 
 const TEXT_MODEL   = 'llama-3.3-70b-versatile';
-const VISION_MODEL = 'llama-3.2-11b-vision-preview';
+const VISION_MODEL = 'meta-llama/llama-4-scout-17b-16e-instruct';
 
 const SYSTEM_PROMPT = `Você é Jhon, um assistente de IA avançado da NovaTech.
 Você é extremamente inteligente, prestativo e direto ao ponto.
@@ -78,6 +78,7 @@ export default async function handler(req) {
 
   if (!groqRes.ok) {
     const err = await groqRes.text();
+    console.error(`[JHON] Groq error ${groqRes.status}:`, err);
     return new Response(
       JSON.stringify({ error: `Groq ${groqRes.status}: ${err}` }),
       { status: 502, headers: { 'Content-Type': 'application/json', ...cors } }
